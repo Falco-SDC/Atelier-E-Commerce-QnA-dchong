@@ -1,0 +1,30 @@
+{
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "nodemon": "^2.0.20",
+    "pg": "^8.8.0"
+  },
+  "name": "qna-dchong",
+  "description": "",
+  "version": "1.0.0",
+  "main": "/server/index.js",
+  "scripts": {
+    "server": "nodemon server/index.js",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Falco-SDC/QnA-dchong.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Falco-SDC/QnA-dchong/issues"
+  },
+  "homepage": "https://github.com/Falco-SDC/QnA-dchong#readme",
+  "devDependencies": {
+    "jest": "^29.2.2"
+  }
+}
