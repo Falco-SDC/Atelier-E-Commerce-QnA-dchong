@@ -16,7 +16,7 @@ const getQuestions = (req, res) => {
       'product_id', '${req.query.product_id}',
       'results', (
         select
-          json_agg(row_to_json(question))
+          coalesce(json_agg(row_to_json(question)), '[]'::json)
         from
           (select
             question_id,
@@ -39,14 +39,14 @@ const getQuestions = (req, res) => {
                     helpfulness,
                     (select coalesce(json_agg(row_to_json(images)), '[]'::json) from (select id, url from answers_photo where answer_id=answers.answer_id) as images) as photos
                   from answers
-                  where question_id = questions.question_id
+                  where question_id = questions.question_id and reported = false
                   order by helpfulness desc, answer_id asc) as result
                 where id=answer_id)
               ),
               '{}'::json
-            ) from answers where question_id = questions.question_id) as answers
+            ) from answers where question_id = questions.question_id and reported = false) as answers
           from questions
-          where product_id = ${req.query.product_id}
+          where product_id = ${req.query.product_id} and reported = false
           limit ${req.query.page * req.query.count}
           ) as question)
     );`)
@@ -64,7 +64,7 @@ const getAnswers = (req, res) => {
       'question', ${req.params.question_id},
       'page', ${req.query.page},
       'count', ${req.query.count},
-      'results', (select json_agg(row_to_json(result)) from (select answer_id, body, (select to_char(to_timestamp(date/1000),'YYYY-MM-DDThh:mm:ss.ff3Z')) as date, answerer_name, helpfulness, (select coalesce(json_agg(row_to_json(images)), '[]'::json) from (select id, url from answers_photo where answer_id=answers.answer_id) as images) as photos from answers where question_id = ${req.params.question_id} order by helpfulness desc, answer_id asc limit ${req.query.count * req.query.page}) as result));`)
+      'results', (select coalesce(json_agg(row_to_json(result)), '[]'::json) from (select answer_id, body, (select to_char(to_timestamp(date/1000),'YYYY-MM-DDThh:mm:ss.ff3Z')) as date, answerer_name, helpfulness, (select coalesce(json_agg(row_to_json(images)), '[]'::json) from (select id, url from answers_photo where answer_id=answers.answer_id) as images) as photos from answers where question_id = ${req.params.question_id} and reported = false order by helpfulness desc, answer_id asc limit ${req.query.count * req.query.page}) as result));`)
     .then((response) => {
       res.json(response.rows[0].json_build_object);
     })
