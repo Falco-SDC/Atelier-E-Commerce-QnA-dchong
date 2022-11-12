@@ -74,7 +74,7 @@ const getAnswers = (req, res) => {
 };
 
 const addQuestion = (req, res) => {
-  return pool.query(`insert into questions (question_id, product_id, question_body, asker_name, asker_email) values ((select MAX(question_id) from questions)+1, ${Number(req.body.product_id)}, '${req.body.body}', '${req.body.name}', '${req.body.email}');`)
+  return pool.query(`insert into questions (product_id, question_body, asker_name, asker_email) values (${Number(req.body.product_id)}, '${req.body.body}', '${req.body.name}', '${req.body.email}');`)
     .then((response) => {
       res.sendStatus(201);
     })
@@ -85,15 +85,15 @@ const addQuestion = (req, res) => {
 
 const addAnswer = (req, res) => {
   return pool.query(`
-    insert into answers (answer_id, question_id, body, answerer_name, answerer_email)
-    values ((select MAX(answer_id) from answers)+1, ${req.params.question_id}, '${req.body.body}', '${req.body.name}', '${req.body.email}')
+    insert into answers (question_id, body, answerer_name, answerer_email)
+    values (${req.params.question_id}, '${req.body.body}', '${req.body.name}', '${req.body.email}')
     returning answer_id;
   `)
     .then((response) => {
       var answer_id = response.rows[0].answer_id;
       req.body.photos.forEach((url) => {
         pool.query(`
-          insert into answers_photo (id, answer_id, url) values ((select MAX(id) from answers_photo)+1, ${answer_id}, '${url}')
+          insert into answers_photo (answer_id, url) values (${answer_id}, '${url}')
           returning id;
         `)
           .catch((error) => {console.log(error)});
